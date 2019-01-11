@@ -39,6 +39,8 @@ public class CTF extends JFrame {
 	private JButton go, stop;
 	private JComboBox port;
 	private JCheckBox enableChat;
+	private JComboBox cmb_maxUsers;
+	private JLabel lbl_maxUsers;
 	
 	// Elements of tab 1
 	private JPanel panel1;
@@ -80,11 +82,6 @@ public class CTF extends JFrame {
 		public ServerProtocol(Socket c) {
 			client = c;
 			run = true;
-					
-			
-			time = new Date();
-			logarea.append(client.getInetAddress() + " has connected at " + sdf.format(time.getTime()) + "\r\n");
-			logarea.setCaretPosition(logarea.getText().length());
 			
 			try {
 				sin = new BufferedReader(new InputStreamReader(client.getInputStream()));
@@ -122,12 +119,36 @@ public class CTF extends JFrame {
 				}
 				
 				if(!isConnected) {
-					clientList.addElement(client);
-		
-					clients.addItem(client);
+					int maxUsers = Integer.parseInt((String)cmb_maxUsers.getSelectedItem());
+					
+					if(clientList.size() >= maxUsers) {
+						sout.print("Maximal size of connected users are reached!\r\n");
+						sout.flush();
+						
+						try {
+							sout.close();
+							sin.close();
+							client.close();
+						}
+						catch(IOException e) {
+							logarea.append("*** " + e.getMessage() + " ***\r\n");
+							logarea.setCaretPosition(logarea.getText().length());
+						}
+					}
+					else {
+					
+						clientList.addElement(client);
+						
+						clients.addItem(client);
+					
+						time = new Date();
+						logarea.append(client.getInetAddress() + " has connected at " + sdf.format(time.getTime()) + "\r\n");
+						logarea.setCaretPosition(logarea.getText().length());
+					}
 				}
 				else {
 					sout.print("You are connected already!\r\n");
+					sout.flush();
 					
 					try {
 						sout.close();
@@ -261,28 +282,34 @@ public class CTF extends JFrame {
 									sout.flush();
 							}
 							else {
-								file = new File(directory + "/" + filename);
-								file.createNewFile();
-								fw = new FileWriter(file);
-								out = new BufferedWriter(fw);
+								try {
+									file = new File(directory + "/" + filename);
+									file.createNewFile();
+									fw = new FileWriter(file);
+									out = new BufferedWriter(fw);
 							
-								sout.print("Enter \"stop\" to save the file!\r\n");
-								sout.flush();
-								do {
-									sout.print("> ");
+									sout.print("Enter \"stop\" to save the file!\r\n");
 									sout.flush();
+									do {
+										sout.print("> ");
+										sout.flush();
 							
-									text = sin.readLine();
+										text = sin.readLine();
 							
-									if(!text.equals("stop")) {
-										out.write(text);
-										out.newLine();
-									}
+										if(!text.equals("stop")) {
+											out.write(text);
+											out.newLine();
+										}
 							
-								} while(!text.equals("stop"));
+									} while(!text.equals("stop"));
 							
-								out.close();
-								fw.close();
+									out.close();
+									fw.close();
+								}
+								catch(IOException e) {
+									sout.print(e.getMessage() + "\r\n");
+									sout.flush();
+								}
 								
 							}
 							
@@ -313,24 +340,30 @@ public class CTF extends JFrame {
 								}
 								else {
 									if(file.isFile()) {
-								
-										fr = new FileReader(file);
-										in = new BufferedReader(fr);
+										
+										try {
+											fr = new FileReader(file);
+											in = new BufferedReader(fr);
 							
-										sout.print("----- Start File -----\r\n");
-										sout.flush();
-										while((t = in.readLine()) != null) {
-											sout.print(t + "\r\n");
+											sout.print("----- Start File -----\r\n");
+											sout.flush();
+											while((t = in.readLine()) != null) {
+												sout.print(t + "\r\n");
+												sout.flush();
+											}
+											sout.print("----- End File -----\r\n");
+											sout.flush();
+							
+											in.close();
+											fr.close();
+							
+											logarea.append(client.getInetAddress() + " read the file " + filename + "\r\n");
+											logarea.setCaretPosition(logarea.getText().length());
+										}
+										catch(IOException e) {
+											sout.print(e.getMessage() + "\r\n");
 											sout.flush();
 										}
-										sout.print("----- End File -----\r\n");
-										sout.flush();
-							
-										in.close();
-										fr.close();
-							
-										logarea.append(client.getInetAddress() + " read the file " + filename + "\r\n");
-										logarea.setCaretPosition(logarea.getText().length());
 									}
 									else {
 										sout.print(filename + " is a directory!\r\n");
@@ -451,8 +484,10 @@ public class CTF extends JFrame {
 								file = new File(directory);
 							}
 							else {
-								file.mkdir();
-								logarea.append(client.getInetAddress() + " created the directory " + file.getPath() + "\n");
+								if(file.mkdir()) {
+									logarea.append(client.getInetAddress() + " created the directory " + file.getPath() + "\n");
+								}
+								
 								file = new File(directory);
 							}
 						}
@@ -646,6 +681,7 @@ public class CTF extends JFrame {
 					write.close();
 					sock.close();
 					clients.removeItem(sock);
+					clientList.removeElement(sock);
 					sock = null;
 				}
 				catch(Exception exp) {
@@ -662,6 +698,7 @@ public class CTF extends JFrame {
 					write.flush();
 					write.close();
 					clients.removeItem(sock);
+					clientList.removeElement(sock);
 					sock = null;
 				}
 				catch(IOException exp) {
@@ -737,9 +774,24 @@ public class CTF extends JFrame {
 		enableChat.setFont(buttonFont);
 		enableChat.addActionListener(new ClickButton());
 		
+		String[] u_s = new String[20];
+		
+		for(int i = 0; i < u_s.length; i++) {
+			u_s[i] = (i+1) + "";
+		}
+		
+		lbl_maxUsers = new JLabel("  Max. Users: ");
+		lbl_maxUsers.setFont(buttonFont);
+		
+		cmb_maxUsers = new JComboBox(u_s);
+		cmb_maxUsers.setFont(buttonFont);
+		cmb_maxUsers.setSelectedIndex(4);
+		
 		tb.add(go);
 		tb.add(port);
 		tb.add(enableChat);
+		tb.add(lbl_maxUsers);
+		tb.add(cmb_maxUsers);
 		tb.add(Box.createHorizontalGlue());
 		tb.add(stop);
 		
