@@ -3,6 +3,8 @@ A simple hacking game.
 
 > At first it runs on linux without problems. It also runs on windows, but there are some problems with the backslash in the windows paths.
 
+If you don't have java, download it here: https://java.com/de/
+
 # Compile the program
 
 To compile the CTF.java use the follow command
