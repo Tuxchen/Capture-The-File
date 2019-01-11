@@ -27,7 +27,7 @@ No user can break out of this folder. The path must be absolute.
   
 > [visible]
 
-"yes" or "no" are excepted. On "yes" you get a GUI with logscreen. On "no" the program runs without a GUI and no logs will be written.
+"yes" or "no" are expected. On "yes" you get a GUI with logscreen. On "no" the program runs without a GUI and no logs will be written.
 
 > [start folder]
 
