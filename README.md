@@ -1,7 +1,7 @@
 # Capture-The-File
 A simple hacking game.
 
-> At first it runs on linux without problems. It also runs on windows, but there are some problems with the "\" in the windows paths.
+> At first it runs on linux without problems. It also runs on windows, but there are some problems with the backslash in the windows paths.
 
 # Compile the program
 
