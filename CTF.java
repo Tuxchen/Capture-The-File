@@ -857,6 +857,9 @@ public class CTF extends JFrame {
 		
 		if(args.length >= 3 && (args[1].equalsIgnoreCase("yes") || args[1].equalsIgnoreCase("no"))) {
 			
+			File[] roots = File.listRoots();
+			boolean isAbsolute = false;
+			
 			secureFile = args[0];
 			startPath = args[2];
 			
@@ -867,11 +870,17 @@ public class CTF extends JFrame {
 				winCode = "§§§!iMpOsSiBlE_!_wInCoDe!§§§";
 			}
 			
-			if(secureFile.charAt(0) == '/' || secureFile.indexOf("C:\\") == 0) {
+			for(int i = 0; i < roots.length; i++) {
+				if(secureFile.indexOf(roots[i].getAbsolutePath()) == 0 && startPath.indexOf(roots[i].getAbsolutePath()) == 0) {
+					isAbsolute = true;
+				}
+			}
+			
+			if(isAbsolute) {
 				
 				if(args[1].equalsIgnoreCase("yes")) {
 					CTF window = new CTF(true);
-					window.setTitle("Capture the File - Server 1.0");
+					window.setTitle("Capture the File - Server");
 					window.setSize(600, 250);
 					window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 				}
